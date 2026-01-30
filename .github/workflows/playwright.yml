@@ -47,7 +47,8 @@ jobs:
 
       # Run Playwright tests
       - name: Run Playwright Tests
-        run: npm run test:pw
+        run: |
+          npm run test:pw
 
       # Generate Allure report
       - name: Generate Allure Report

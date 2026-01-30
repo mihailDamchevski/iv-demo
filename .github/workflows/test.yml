@@ -50,7 +50,8 @@ jobs:
 
       # 6. Run Playwright tests
       - name: Run Playwright Tests
-        run: npx playwright test
+        run: |
+          npx playwright test
         continue-on-error: true
 
       # 7. Generate Allure report
