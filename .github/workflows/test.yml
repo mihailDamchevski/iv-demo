@@ -8,6 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
+  permissions:
+    contents: write
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -50,6 +52,12 @@ jobs:
 
       - name: Generate Allure Report
         run: npm run report:allure:generate || true  # <-- never fail even if tests failed
+
+      - name: Debug Allure output
+        if: always()
+        run: |
+          echo "Allure report contents:"
+          ls -la allure-report || echo "allure-report missing"
 
       # Upload only the Allure report for deployment
       - name: Upload Allure Report
