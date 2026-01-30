@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: "allure-playwright",
   use: {
     baseURL: "http://localhost:8080/todo",
-    headless: false,
+    headless: process.env.CI ? true : false,
     trace: "on-first-retry",
   },
 
