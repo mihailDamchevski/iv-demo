@@ -1,34 +1,99 @@
-import {Page} from '@playwright/test'
+import { Page } from '@playwright/test'
 
-const TodosPage = {
-    input: 'input.new-todo',
-    todoItems: 'ul.todo-list li',
-    toggleAll: 'input.toggle-all',
-    clearCompleted: 'button.clear-completed',
+export default class TodosPage {
+    constructor(private readonly page: Page) {}
 
-    addTodo: async (page: Page, todoText: string) => {
-        await page.fill(TodosPage.input, todoText);
-        await page.press(TodosPage.input, 'Enter');
-    },
+    get input() {
+        return this.page.locator('//input[@data-test="new-todo"]')
+    }
+    get todoItems() {
+        return this.page.locator(`//ul[@class="todo-list"]/li`)
+    }
+    get toggleAll() {
+        return this.page.locator(`//label[@for]`)
+    }
+    get clearCompleted() {
+        return this.page.locator('button.clear-completed')
+    }
+    get filterAllButton() {
+        return this.page.locator(`//a[text()='All']`)
+    }
+    get filterActiveButton() {
+        return this.page.locator(`//a[text()='Active']`)
+    }
+    get filterCompletedButton() {
+        return this.page.locator(`//a[text()='Completed']`)
+    }
+    get todoCountLabel() {
+        return this.page.locator(`//span[@class="todo-count"]`)
+    }
+    private deleteButton(todoText: string) {
+        return this.page.locator(
+            `//label[text()="${todoText}"]/following-sibling::button[@class="destroy todo-button"]`,
+        )
+    }
+    private toggleButton(todoText: string) {
+        return this.page.locator(`//label[text()="${todoText}"]/preceding-sibling::input[@class="toggle"]`)
+    }
 
-    getTodoCount: async (page: Page) => {
-        return await page.locator(TodosPage.todoItems).count();
-    },
+    async cancelEditTodo(todoText: string, newTodoText: string) {
+        await this.hoverOverTodoItem(todoText)
+        const todoLabel = this.page.locator(`//label[text()="${todoText}"]`)
+        await todoLabel.dblclick()
+        const editInput = this.page.locator(`//li[contains(@class, "editing")]//input[@class="edit"]`)
+        await editInput.fill(newTodoText)
+        return await editInput.press('Escape')
+    }
 
-    toggleTodo: async (page: Page, index:number) => {
-        const todoItem = page.locator(TodosPage.todoItems).nth(index);
-        await todoItem.locator('input.toggle').click();
-    },
+    async clickToggleAllButton() {
+        await this.toggleAll.click()
+    }
 
-    clearCompletedTodos: async (page: Page) => {
-        await page.click(TodosPage.clearCompleted);
-    },
+    async deleteTodo(todoText: string) {
+        await this.hoverOverTodoItem(todoText)
+        return await this.deleteButton(todoText).click()
+    }
 
-    seeCompletedTodos: async (page: Page) => {
-        return await page.locator(`${TodosPage.todoItems}.completed`).count();
-    },
+    async editTodo(todoText: string, newTodoText: string) {
+        await this.hoverOverTodoItem(todoText)
+        const todoLabel = this.page.locator(`//label[text()="${todoText}"]`)
+        await todoLabel.dblclick()
+        const editInput = this.page.locator(`//li[contains(@class, "editing")]//input[@class="edit"]`)
+        await editInput.fill(newTodoText)
+        return await editInput.press('Enter')
+    }
 
-    openActiveTodos: async (page: Page) => {
-        return await page.locator(`${TodosPage.todoItems}.completed`).count();
+    async getTodoTextByIndex(index: number): Promise<string> {
+        return (await this.todoItems.nth(index).innerText()).trim()
+    }
+
+    async addTodo(todoText: string) {
+        await this.input.fill(todoText)
+        await this.input.press('Enter')
+    }
+
+    async toggleTodo(todoText: string) {
+        await this.toggleButton(todoText).click()
+    }
+
+    async getTodoCount() {
+        // Reinitializing locator to get updated count.
+        return await this.page.locator(`//ul[@class="todo-list"]/li`).count()
+    }
+
+    async hoverOverTodoItem(todoText: string) {
+        await this.page.locator(`//label[text()="${todoText}"]`).hover()
+    }
+
+    async clearCompletedTodos() {
+        await this.clearCompleted.click()
+    }
+
+    async openCompletedTodos() {
+        await this.filterCompletedButton.click()
+    }
+
+    async openActiveTodos() {
+        return await this.filterActiveButton.click()
     }
 }
