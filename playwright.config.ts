@@ -6,7 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  reporter: "allure-playwright",
+  reporter: [["list"], ["allure-playwright"]],
   use: {
     baseURL: "http://localhost:8080/todo",
     headless: process.env.CI ? true : false,
