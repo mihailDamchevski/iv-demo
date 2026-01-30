@@ -5,8 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:      
-
+  workflow_dispatch:
 
 jobs:
   test:
@@ -16,29 +15,25 @@ jobs:
         node-version: [20]
 
     steps:
-      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
-      # 3. Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # 4. Install Playwright browsers
       - name: Install Playwright Browsers
         run: npx playwright install
 
-      # 5. Start app in background
       - name: Start ToDo App
         run: |
           npm start &
           echo $! > app.pid
+
       - name: Wait for app
         run: |
           n=0
@@ -48,24 +43,30 @@ jobs:
             sleep 2
           done
 
-      # 6. Run Playwright tests
       - name: Run Playwright Tests
         run: |
           npx playwright test
-        continue-on-error: true
+        continue-on-error: true  # <-- continue even if tests fail
 
-      # 7. Generate Allure report
       - name: Generate Allure Report
-        run: npm run report:allure:generate 
+        run: npm run report:allure:generate || true  # <-- never fail even if tests failed
 
-      # 8. Upload Allure report and test artifacts
-      - name: Upload Artifacts
+      # Upload only the Allure report for deployment
+      - name: Upload Allure Report
+        if: always()  # <-- always run, even if previous steps failed
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-artifacts
+          name: allure-report
+          path: ./allure-report
+
+      # Upload other test artifacts (screenshots, videos, traces)
+      - name: Upload Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts
           path: |
             test-results/
-            allure-report/
             playwright-report/
             videos/
             screenshots/
@@ -78,14 +79,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Download allure-report from previous job
-      - name: Download Allure report
+      - name: Download Allure Report
         uses: actions/download-artifact@v4
         with:
-          name: playwright-artifacts
+          name: allure-report
           path: ./allure-report
 
-      # Deploy to GitHub Pages
       - name: Deploy Allure Report to GitHub Pages
         uses: peaceiris/actions-gh-pages@v6
         with:
