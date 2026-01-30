@@ -11,6 +11,8 @@ export default defineConfig({
     baseURL: "http://localhost:8080/todo",
     headless: process.env.CI ? true : false,
     trace: "on-first-retry",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
   },
 
   projects: [

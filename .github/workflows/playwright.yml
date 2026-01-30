@@ -52,6 +52,7 @@ jobs:
       # Generate Allure report
       - name: Generate Allure Report
         run: npm run report:allure:generate
+        continue-on-error: true
 
       # Upload Allure report artifact
       - name: Upload Allure Report
