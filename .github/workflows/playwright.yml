@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Playwright Browsers
+        run: npx playwright install
+
       # Start the app in the background
       - name: Start ToDo App
         run: |
