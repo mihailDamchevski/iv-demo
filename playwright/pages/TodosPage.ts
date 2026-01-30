@@ -6,34 +6,47 @@ export default class TodosPage {
     get input() {
         return this.page.locator('//input[@data-test="new-todo"]')
     }
+
     get todoItems() {
         return this.page.locator(`//ul[@class="todo-list"]/li`)
     }
+
     get toggleAll() {
         return this.page.locator(`//label[@for]`)
     }
+
     get clearCompleted() {
         return this.page.locator('button.clear-completed')
     }
+
     get filterAllButton() {
         return this.page.locator(`//a[text()='All']`)
     }
+
     get filterActiveButton() {
         return this.page.locator(`//a[text()='Active']`)
     }
+
     get filterCompletedButton() {
         return this.page.locator(`//a[text()='Completed']`)
     }
+
     get todoCountLabel() {
         return this.page.locator(`//span[@class="todo-count"]`)
     }
-    private deleteButton(todoText: string) {
+
+    deleteButton(todoText: string) {
         return this.page.locator(
             `//label[text()="${todoText}"]/following-sibling::button[@class="destroy todo-button"]`,
         )
     }
-    private toggleButton(todoText: string) {
+
+    toggleButton(todoText: string) {
         return this.page.locator(`//label[text()="${todoText}"]/preceding-sibling::input[@class="toggle"]`)
+    }
+
+    async getTodoCountLabelText(): Promise<string> {
+        return await this.todoCountLabel.innerText()
     }
 
     async cancelEditTodo(todoText: string, newTodoText: string) {
