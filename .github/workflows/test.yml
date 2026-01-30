@@ -100,3 +100,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./allure-report
           publish_branch: gh-pages
+
+      - name: Print GitHub Pages URL
+        run: |
+          echo "Allure report deployed to:"
+          echo "https://${{ github.repository_owner }}.github.io/${{ github.repository }}/"
