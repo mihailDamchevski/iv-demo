@@ -1,25 +1,24 @@
-# This Docker file is for building this project on Codeship Pro
-# https://documentation.codeship.com/pro/languages-frameworks/nodejs/
+FROM mcr.microsoft.com/playwright:v1.58.0-jammy
 
-# use Cypress provided image with all dependencies included
-FROM cypress/base:24.13.0
-RUN node --version
-RUN npm --version
-WORKDIR /home/node/app
-# copy our test application
+ENV CI=true
+WORKDIR /app
+
+# Install dependencies WITHOUT running lifecycle scripts (fixes husky)
 COPY package.json package-lock.json ./
-COPY app ./app
-COPY serve.json ./
-COPY scripts ./scripts
-# copy Cypress tests
-COPY cypress.config.js cypress ./
-COPY cypress ./cypress
+RUN npm ci --ignore-scripts
 
-# avoid many lines of progress bars during install
-# https://github.com/cypress-io/cypress/issues/1243
-ENV CI=1
+# Copy rest of repo
+COPY . .
 
-# install npm dependencies and Cypress binary
-RUN npm ci
-# check if the binary was installed successfully
-RUN npx cypress verify
+EXPOSE 8080
+
+CMD ["bash", "-c", "\
+  npm start & \
+  n=0; \
+  until curl -sSf http://localhost:8080/todo || [ $n -ge 20 ]; do \
+    echo 'Waiting for app...'; \
+    sleep 2; \
+    n=$((n+1)); \
+  done && \
+  npx playwright test \
+"]
