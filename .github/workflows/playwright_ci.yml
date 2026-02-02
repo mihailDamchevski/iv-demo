@@ -103,7 +103,5 @@ jobs:
 
       - name: Print GitHub Pages URL
         run: |
-          OWNER=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f1)
-          REPO=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f2)
-          echo "Allure report deployed to: https://${OWNER}.github.io/${REPO}/"
+          echo "Todo App allure report deployed to: https://${OWNER}.github.io/${REPO}/"
 

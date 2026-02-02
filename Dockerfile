@@ -3,11 +3,9 @@ FROM mcr.microsoft.com/playwright:v1.58.0-jammy
 ENV CI=true
 WORKDIR /app
 
-# Install dependencies WITHOUT running lifecycle scripts (fixes husky)
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 
-# Copy rest of repo
 COPY . .
 
 EXPOSE 8080

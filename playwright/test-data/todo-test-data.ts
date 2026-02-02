@@ -1,11 +1,31 @@
-import { generateRandomString } from '../utils/helpers'
+import { generateRandomInt, generateRandomString } from '../utils/helpers'
+import { Todo, TodoEditOptions } from '../utils/types'
 
-export const todoData = {
-    THING_TO_DO: generateRandomString(10),
+const getRandomID = () => generateRandomInt(1000000000000, 9999999999999).toString();
+
+export const testTodo: Todo = {
+    title: generateRandomString(10),
+    id: getRandomID(),
+    completed: false,
 }
-export const defaultTodos = ['Pay electric bill', 'Walk the dog']
 
-export const MALFORMED_TODOS = [
-    { id: 1, title: 'Injected Valid Todo', completed: false },
-    { id: 2, title: '', completed: "not-a-boolean" },
+export const defaultTodos: Array<Todo> = [
+    { title: 'Pay electric bill', id: "", completed: false },
+    { title: 'Walk the dog', id: "", completed: false }
 ]
+
+export const MALFORMED_TODOS: Array<Todo> = [
+    { id: getRandomID(), title: 'Injected Valid Todo', completed: false },
+    { id: getRandomID(), title: '', completed: "not-a-boolean" },
+]
+
+export const editOptions: TodoEditOptions = {
+    todo: defaultTodos[0],
+    newTodoText: generateRandomString(10),
+}
+
+export const cancelEditOptions: TodoEditOptions = {
+    todo: defaultTodos[0],
+    newTodoText: generateRandomString(10),
+    saveTodo: false,
+}

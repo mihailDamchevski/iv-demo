@@ -23,3 +23,17 @@ export const generateRandomString = (length: number, charset?: string): string =
 export function generateRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min
 }
+
+
+/**
+ * Creates string for items left label based on count
+ * @param count Number of items left
+ * @returns Formatted string
+ * 
+ * @example
+ * formatItemsLeftLabel(1) => "1 item left"
+ * formatItemsLeftLabel(5) => "5 items left"
+ */
+export function formatItemsLeftLabel(count: number): string {
+    return `${count} item${count !== 1 ? 's' : ''} left`
+}

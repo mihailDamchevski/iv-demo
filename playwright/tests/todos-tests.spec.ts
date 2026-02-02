@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
-import { todoData, defaultTodos, MALFORMED_TODOS } from '../test-data/todo-test-data'
+import { defaultTodos, MALFORMED_TODOS, editOptions, cancelEditOptions, testTodo } from '../test-data/todo-test-data'
+import { formatItemsLeftLabel } from '../utils/helpers'
 import TodosPage from '../pages/TodosPage'
 
 let todosPage: TodosPage
@@ -10,120 +11,113 @@ test.describe('Todos Application Tests', () => {
         await page.goto('/todo')
     })
 
-    test('should add a new todo', async ({}) => {
-        await todosPage.addTodo(todoData.THING_TO_DO)
+    test('should add a new todo', async ({ }) => {
+        await todosPage.addTodo(testTodo.title)
 
-        expect(await todosPage.getTodoTextByIndex(defaultTodos.length)).toBe(todoData.THING_TO_DO)
-        expect(await todosPage.getTodoCountLabelText()).toBe('3 items left')
+        expect(await todosPage.getTodoTextByIndex(defaultTodos.length)).toBe(testTodo.title)
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(3))
     })
 
-    test('should delete a todo', async ({}) => {
-        await todosPage.addTodo(todoData.THING_TO_DO)
-        await todosPage.hoverOverTodoItem(todoData.THING_TO_DO)
+    test('should delete a todo', async ({ }) => {
+        await todosPage.injectTodosInLocalStorage([testTodo]);
 
-        await todosPage.deleteTodo(todoData.THING_TO_DO)
+        await todosPage.deleteTodo(testTodo.id)
 
-        expect(await todosPage.getTodoCountLabelText()).toBe('2 items left')
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(0))
     })
 
-    test('should delete default todos', async ({}) => {
-        await todosPage.hoverOverTodoItem(defaultTodos[0])
-        await todosPage.deleteTodo(defaultTodos[0])
-        await todosPage.hoverOverTodoItem(defaultTodos[1])
-        await todosPage.deleteTodo(defaultTodos[1])
+    test('should delete default todos', async ({ }) => {
+        await todosPage.deleteTodo(await todosPage.getTodoIdByTitle(defaultTodos[0].title))
+        await todosPage.deleteTodo(await todosPage.getTodoIdByTitle(defaultTodos[1].title))
 
-        expect(await todosPage.getTodoCountLabelText()).toBe('0 items left')
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(0))
     })
 
-    test('should edit an existing todo', async ({}) => {
-        await todosPage.editTodo(defaultTodos[0], todoData.THING_TO_DO)
+    test('should edit an existing todo', async ({ }) => {
+        await todosPage.editTodo(editOptions);
 
-        expect(await todosPage.getTodoTextByIndex(0)).toBe(todoData.THING_TO_DO)
+        expect(await todosPage.getTodoTextByIndex(0)).toBe(editOptions.newTodoText)
     })
 
-    test('should cancel todo edit', async ({}) => {
-        await todosPage.cancelEditTodo(defaultTodos[0], 'This edit will be canceled')
+    test('should cancel todo edit', async ({ }) => {
+        await todosPage.editTodo(cancelEditOptions);
 
-        expect(await todosPage.getTodoTextByIndex(0)).toBe(defaultTodos[0])
+        expect(await todosPage.getTodoTextByIndex(0)).toBe(defaultTodos[0].title)
     })
 
-    test('should move todo to completed', async ({}) => {
-        await todosPage.toggleTodo(defaultTodos[0])
+    test('should move todo to completed', async ({ }) => {
+        await todosPage.toggleTodo(await todosPage.getTodoIdByTitle(defaultTodos[0].title))
+
         await todosPage.openCompletedTodos()
-        
-        expect(await todosPage.getTodoCountLabelText()).toBe('1 item left')
+
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(1))
     })
 
-    test('should return todo from completed to active', async ({}) => {
-        await todosPage.toggleTodo(defaultTodos[0])
+    test('should return todo from completed to active', async ({ }) => {
+        await todosPage.toggleTodo(await todosPage.getTodoIdByTitle(defaultTodos[0].title))
         await todosPage.openCompletedTodos()
-        await todosPage.toggleTodo(defaultTodos[0])
+        await todosPage.toggleTodo(await todosPage.getTodoIdByTitle(defaultTodos[0].title))
         await todosPage.openActiveTodos()
 
-        expect(await todosPage.getTodoCountLabelText()).toBe('2 items left')
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(2))
     })
 
-    test('should navigate to active todos', async ({}) => {
-        await todosPage.filterActiveButton.click()
+    test('should navigate to active todos', async ({ }) => {
         await todosPage.openActiveTodos()
 
         await expect(todosPage.filterActiveButton).toHaveAttribute('class', 'selected')
     })
 
-    test('should navigate to completed todos', async ({}) => {
-        await todosPage.toggleTodo(defaultTodos[0])
+    test('should navigate to completed todos', async ({ }) => {
         await todosPage.openCompletedTodos()
 
         await expect(todosPage.filterCompletedButton).toHaveAttribute('class', 'selected')
     })
 
-    test('should clear completed todos', async ({}) => {
-        await todosPage.toggleTodo(defaultTodos[0])
+    test('should clear 1 completed todo', async ({ }) => {
+        await todosPage.toggleTodo(await todosPage.getTodoIdByTitle(defaultTodos[0].title))
+
         await todosPage.clearCompletedTodos()
 
-        expect(await todosPage.getTodoCountLabelText()).toBe('1 item left')
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(1))
     })
 
-    test('should select all todos', async ({}) => {
+    test('should select all todos', async ({ }) => {
         await todosPage.clickToggleAllButton()
         await todosPage.openCompletedTodos()
 
-        expect(await todosPage.getTodoCountLabelText()).toBe('2 items left')
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(0))
     })
 
     test('should persist todos after page reload', async ({ page }) => {
-        await todosPage.addTodo(todoData.THING_TO_DO)
+        await todosPage.addTodo(testTodo.title)
         await page.reload()
-        
-        expect(await todosPage.getTodoCountLabelText()).toBe('3 items left')
+
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(3))
     })
 
-    test('should show correct items left count', async ({}) => {
-        expect(await todosPage.getTodoCountLabelText()).toBe('2 items left')
+    test(`should show correct 'items left count'`, async ({ }) => {
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(2))
 
-        await todosPage.addTodo(todoData.THING_TO_DO)
+        await todosPage.addTodo(testTodo.title)
 
-        expect(await todosPage.getTodoCountLabelText()).toBe('3 items left')
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(3))
 
-        await todosPage.toggleTodo(defaultTodos[0])
+        await todosPage.toggleTodo(await todosPage.getTodoIdByTitle(defaultTodos[0].title))
 
-        expect(await todosPage.getTodoCountLabelText()).toBe('2 items left')
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(2))
     })
 
-    test('should not add empty todo', async ({}) => {
+    test('should not add empty todo', async ({ }) => {
         await todosPage.addTodo('')
 
-        expect(await todosPage.getTodoCountLabelText()).toBe('2 items left')
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(2))
     })
 
-    test('should handle injected todos safely', async ({ page }) => {
-        await page.goto('/todo')
-        await page.evaluate((MALFORMED_TODOS) => {
-            localStorage.setItem('todos-vanillajs', JSON.stringify(MALFORMED_TODOS))
-            location.reload()
-        }, MALFORMED_TODOS)
+    test('should handle injected todos safely', async ({}) => {
+        await todosPage.injectTodosInLocalStorage(MALFORMED_TODOS);
 
-        expect(await todosPage.getTodoTextByIndex(0)).toBe('Injected Valid Todo')
-        expect(await todosPage.getTodoCountLabelText()).toBe('1 item left')
+        expect(await todosPage.getTodoTextByIndex(0)).toBe(MALFORMED_TODOS[0].title)
+        expect(await todosPage.getTodoCountLabelText()).toBe(formatItemsLeftLabel(1))
     })
 })

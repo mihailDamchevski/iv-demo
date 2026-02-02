@@ -15,7 +15,6 @@ It includes Page Object Model abstractions, data-driven tests, Dockerized execut
 ## Project Structure
 
 ```
-.
 ├── playwright/
 │   ├── pages/
 │   │   └── TodosPage.ts
@@ -29,7 +28,7 @@ It includes Page Object Model abstractions, data-driven tests, Dockerized execut
 ├── allure-report/
 ├── .github/
 │   └── workflows/
-│       └── test.yml
+│       └──playwright_ci.yml
 ├── Dockerfile
 ├── playwright.config.ts
 ├── package.json
@@ -68,21 +67,16 @@ It includes Page Object Model abstractions, data-driven tests, Dockerized execut
 ### Install Dependencies
 
 ```bash
-npm ci
+npm i
 npx playwright install
 ```
 
 ## Running Tests Locally
 
 ```bash
-npm test
+npm run test:pw
 ```
 
-Run with Playwright UI:
-
-```bash
-npx playwright test --ui
-```
 
 ## Allure Reports (Local)
 
@@ -121,13 +115,13 @@ docker run --rm playwright-e2e
 
 ## CI Pipeline (GitHub Actions)
 
-The workflow (`.github/workflows/test.yml`) performs:
+The workflow (`.github/workflows/playwright_ci.yml`) performs:
 
 1. Install Node.js and dependencies
 2. Install Playwright browsers
 3. Start the Todo app
 4. Wait for the app to be ready
-5. Run Playwright tests (continues even if some tests fail)
+5. Run Playwright tests
 6. Generate Allure report
 7. Upload Allure report and other test artifacts
 8. Deploy Allure report to GitHub Pages
